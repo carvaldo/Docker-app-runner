@@ -85,5 +85,5 @@ jobs:
         with:
           username: ${{ env.DOCKERHUB_USERNAME }}
           password: ${{ env.DOCKERHUB_PASSWORD }}
-          repository: ${{ env.DOCKERHUB_USERNAME }}/Docker-app-runner
+          repository: ${{ env.DOCKERHUB_USERNAME }}/app-runner
           readme-filepath: ./README.md
