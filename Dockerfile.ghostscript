@@ -1,4 +1,4 @@
-FROM alpine:2.7.5
+FROM alpine:3.23.3
 
 WORKDIR /app
 
