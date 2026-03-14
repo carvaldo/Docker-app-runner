@@ -1,0 +1,11 @@
+services:
+  app:
+    image: app-runner
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      APP_DIRECTORY: /app
+      APP_NAME: app.bin
+      APP_ARGS: ""
+      TZ: America/Campo_Grande

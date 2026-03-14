@@ -1,0 +1,89 @@
+name: Docker Hub Publish
+
+on:
+  push:
+    tags:
+      - "*"
+  workflow_dispatch:
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    environment: dockerhub
+    permissions:
+      contents: read
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_TOKEN != '' && secrets.DOCKERHUB_TOKEN || secrets.DOCKERHUB_PASSWORD }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Validate Docker Hub credentials
+        run: |
+          if [ -z "$DOCKERHUB_USERNAME" ]; then
+            echo "::error::Missing Docker Hub username. Set DOCKERHUB_USERNAME in repository secrets."
+            exit 1
+          fi
+          if [ -z "$DOCKERHUB_PASSWORD" ]; then
+            echo "::error::Missing Docker Hub token/password. Set DOCKERHUB_TOKEN (preferred) or DOCKERHUB_PASSWORD in repository secrets."
+            exit 1
+          fi
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_PASSWORD }}
+
+      - name: Resolve Dockerfile and tags from git tag
+        id: target
+        run: |
+          IMAGE="${DOCKERHUB_USERNAME}/app-runner"
+          REF_TYPE="${GITHUB_REF_TYPE:-}"
+          REF_NAME="${GITHUB_REF_NAME:-}"
+
+          if [ "$REF_TYPE" = "tag" ] && [ -n "$REF_NAME" ]; then
+            if [[ "$REF_NAME" == ghostscript* ]]; then
+              echo "dockerfile=Dockerfile.ghostscript" >> "$GITHUB_OUTPUT"
+              {
+                echo "tags<<EOF"
+                echo "${IMAGE}:${REF_NAME}"
+                echo "EOF"
+              } >> "$GITHUB_OUTPUT"
+            else
+              echo "dockerfile=Dockerfile" >> "$GITHUB_OUTPUT"
+              {
+                echo "tags<<EOF"
+                echo "${IMAGE}:${REF_NAME}"
+                echo "${IMAGE}:latest"
+                echo "EOF"
+              } >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "dockerfile=Dockerfile" >> "$GITHUB_OUTPUT"
+            {
+              echo "tags<<EOF"
+              echo "${IMAGE}:latest"
+              echo "EOF"
+            } >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ${{ steps.target.outputs.dockerfile }}
+          push: true
+          tags: ${{ steps.target.outputs.tags }}
+
+      - name: Sync README to Docker Hub description
+        uses: peter-evans/dockerhub-description@v4
+        with:
+          username: ${{ env.DOCKERHUB_USERNAME }}
+          password: ${{ env.DOCKERHUB_PASSWORD }}
+          repository: ${{ env.DOCKERHUB_USERNAME }}/Docker-app-runner
+          readme-filepath: ./README.md
