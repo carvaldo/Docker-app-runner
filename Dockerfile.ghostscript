@@ -5,7 +5,8 @@ WORKDIR /app
 RUN apk add --no-cache \
     bash \
     tzdata \
-    ghostscript
+    ghostscript \
+    ca-certificates
 
 ENV TZ=America/Campo_Grande
 
