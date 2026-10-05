@@ -47,7 +47,7 @@ jobs:
           REF_NAME="${GITHUB_REF_NAME:-}"
 
           if [ "$REF_TYPE" = "tag" ] && [ -n "$REF_NAME" ]; then
-            if [[ "$REF_NAME" == ghostscript* ]]; then
+            if [[ "$REF_NAME" == *ghostscript* ]]; then
               echo "dockerfile=Dockerfile.ghostscript" >> "$GITHUB_OUTPUT"
               {
                 echo "tags<<EOF"

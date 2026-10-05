@@ -1,10 +1,12 @@
-FROM alpine:3.23.3
+FROM debian:bookworm-slim
 
 WORKDIR /app
 
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     bash \
-    tzdata
+    ca-certificates \
+    tzdata \
+    && rm -rf /var/lib/apt/lists/*
 
 ENV TZ=America/Campo_Grande
 

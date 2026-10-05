@@ -1,11 +1,14 @@
 # Docker App Runner
 
-Imagem para executar um binario em `/app`.
+Imagem mínima (Debian/glibc) para executar um binário em `/app`.
+
+Compatível com binários nativos que dependem de **glibc** (ex.: `dart compile exe`).
+Não use Alpine/musl para esse tipo de executável.
 
 Suporte incluso:
 
 - timezone fixo em `America/Campo_Grande`;
-- configuracao da aplicacao por variaveis de ambiente.
+- configuração da aplicação por variáveis de ambiente.
 
 ## Uso com docker-compose
 
@@ -20,11 +23,13 @@ services:
       APP_NAME: app.bin
       APP_ARGS: ""
       TZ: America/Campo_Grande
+    volumes:
+      - ./app.bin:/app/app.bin
 ```
 
-## Variaveis de ambiente
+## Variáveis de ambiente
 
-- `APP_DIRECTORY`: diretorio onde esta o binario (padrao `/app`);
-- `APP_NAME`: nome do binario (padrao `app.bin`);
-- `APP_ARGS`: argumentos repassados para o binario;
-- `TZ`: timezone da imagem (padrao `America/Campo_Grande`).
+- `APP_DIRECTORY`: diretório onde está o binário (padrão `/app`);
+- `APP_NAME`: nome do binário (padrão `app.bin`);
+- `APP_ARGS`: argumentos repassados para o binário;
+- `TZ`: timezone da imagem (padrão `America/Campo_Grande`).
